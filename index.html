@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用戶管理系統</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        .action-btn {
+            margin-right: 5px;
+            padding: 5px 10px;
+        }
+        .edit-btn {
+            background-color: #2196F3;
+        }
+        .edit-btn:hover {
+            background-color: #0b7dda;
+        }
+        .delete-btn {
+            background-color: #f44336;
+        }
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <h1>用戶管理系統</h1>
+
+    <div class="section">
+        <h2>查詢所有用戶</h2>
+        <button id="getAllUsers">獲取所有用戶</button>
+        <div id="allUsersResult">
+            <table id="usersTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>姓名</th>
+                        <th>年齡</th>
+                        <th>郵箱</th>
+                        <th>生日</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>查詢特定用戶</h2>
+        <div>
+            <label for="userId">用戶ID:</label>
+            <input type="number" id="userId" min="1">
+            <label for="queryParam">查詢參數 (選填):</label>
+            <input type="text" id="queryParam">
+            <button id="getUser">查詢</button>
+        </div>
+        <div id="userResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>新增用戶</h2>
+        <div>
+            <label for="newUserId">ID:</label>
+            <input type="number" id="newUserId" min="1">
+            <label for="newUserName">姓名:</label>
+            <input type="text" id="newUserName">
+            <label for="newUserAge">年齡:</label>
+            <input type="number" id="newUserAge" min="1">
+            <label for="newUserEmail">郵箱:</label>
+            <input type="email" id="newUserEmail">
+            <label for="newUserBirthday">生日:</label>
+            <input type="date" id="newUserBirthday">
+            <button id="createUser">創建</button>
+        </div>
+        <div id="createResult"></div>
+    </div>
+
+    <div class="section" id="updateUserSection" style="display: none;">
+        <h2>更新用戶</h2>
+        <div>
+            <label for="updateUserId">ID:</label>
+            <input type="number" id="updateUserId" min="1" readonly>
+            <label for="updateUserName">姓名:</label>
+            <input type="text" id="updateUserName">
+            <label for="updateUserAge">年齡:</label>
+            <input type="number" id="updateUserAge" min="1">
+            <label for="updateUserEmail">郵箱:</label>
+            <input type="email" id="updateUserEmail">
+            <label for="updateUserBirthday">生日:</label>
+            <input type="date" id="updateUserBirthday">
+            <button id="updateUser">更新</button>
+            <button id="cancelUpdate" style="background-color: #f44336;">取消</button>
+        </div>
+        <div id="updateResult"></div>
+    </div>
+
+    <div class="section">
+        <h2>刪除用戶</h2>
+        <div>
+            <label for="deleteUserId">用戶ID:</label>
+            <input type="number" id="deleteUserId" min="1">
+            <button id="deleteUser">刪除</button>
+        </div>
+        <div id="deleteResult"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000';
+
+        // 獲取所有用戶
+        function fetchAllUsers() {
+            return fetch(`${API_URL}/allUsers`)
+                .then(response => response.json());
+        }
+
+        // 顯示所有用戶
+        function displayAllUsers() {
+            fetchAllUsers()
+                .then(data => {
+                    const tableBody = document.getElementById('usersTableBody');
+                    tableBody.innerHTML = '';
+                    
+                    for (const [id, user] of Object.entries(data)) {
+                        const row = document.createElement('tr');
+                        
+                        const idCell = document.createElement('td');
+                        idCell.textContent = id;
+                        
+                        const nameCell = document.createElement('td');
+                        nameCell.textContent = user.name;
+                        
+                        const ageCell = document.createElement('td');
+                        ageCell.textContent = user.age;
+                        
+                        const emailCell = document.createElement('td');
+                        emailCell.textContent = user.email;
+                        
+                        const birthdayCell = document.createElement('td');
+                        birthdayCell.textContent = user.birthday;
+                        
+                        const actionsCell = document.createElement('td');
+                        
+                        // 編輯按鈕
+                        const editButton = document.createElement('button');
+                        editButton.textContent = '編輯';
+                        editButton.className = 'action-btn edit-btn';
+                        editButton.onclick = () => prepareUpdate(id, user);
+                        
+                        // 刪除按鈕
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = '刪除';
+                        deleteButton.className = 'action-btn delete-btn';
+                        deleteButton.onclick = () => deleteUserById(id);
+                        
+                        actionsCell.appendChild(editButton);
+                        actionsCell.appendChild(deleteButton);
+                        
+                        row.appendChild(idCell);
+                        row.appendChild(nameCell);
+                        row.appendChild(ageCell);
+                        row.appendChild(emailCell);
+                        row.appendChild(birthdayCell);
+                        row.appendChild(actionsCell);
+                        
+                        tableBody.appendChild(row);
+                    }
+                    
+                    document.getElementById('usersTable').style.display = 'table';
+                })
+                .catch(error => {
+                    document.getElementById('allUsersResult').innerHTML = `<p class="error">獲取用戶時發生錯誤: ${error.message}</p>`;
+                });
+        }
+
+        // 初始化更新表單
+        function prepareUpdate(id, user) {
+            document.getElementById('updateUserSection').style.display = 'block';
+            document.getElementById('updateUserId').value = id;
+            document.getElementById('updateUserName').value = user.name;
+            document.getElementById('updateUserAge').value = user.age;
+            document.getElementById('updateUserEmail').value = user.email;
+            
+            // 格式化日期 (如果需要)
+            let birthday = user.birthday;
+            if (birthday && !birthday.includes('-')) {
+                const date = new Date(birthday);
+                birthday = date.toISOString().split('T')[0];
+            }
+            document.getElementById('updateUserBirthday').value = birthday;
+            
+            // 滾動到更新部分
+            document.getElementById('updateUserSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 刪除用戶
+        function deleteUserById(id) {
+            if (confirm(`您確定要刪除ID為 ${id} 的用戶嗎？`)) {
+                fetch(`${API_URL}/user/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP錯誤！狀態: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert(`用戶 ${data.name} 已成功刪除！`);
+                    displayAllUsers();
+                })
+                .catch(error => {
+                    console.error("刪除錯誤:", error);
+                    alert(`刪除用戶時發生錯誤: ${error.message}`);
+                });
+            }
+        }
+
+        // 獲取所有用戶按鈕事件
+        document.getElementById('getAllUsers').addEventListener('click', displayAllUsers);
+
+        // 獲取特定用戶
+        document.getElementById('getUser').addEventListener('click', async () => {
+            const userId = document.getElementById('userId').value;
+            const queryParam = document.getElementById('queryParam').value;
+            
+            if (!userId) {
+                document.getElementById('userResult').innerHTML = '<p class="error">請輸入用戶ID</p>';
+                return;
+            }
+            
+            try {
+                let url = `${API_URL}/user/${userId}`;
+                if (queryParam) {
+                    url += `?qry=${encodeURIComponent(queryParam)}`;
+                }
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP錯誤！狀態: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('userResult').innerHTML = `<p class="error">${data.error}</p>`;
+                } else {
+                    const user = data.user;
+                    const resultHtml = `
+                        <h3>用戶信息:</h3>
+                        <p>ID: ${userId}</p>
+                        <p>姓名: ${user.name}</p>
+                        <p>年齡: ${user.age}</p>
+                        <p>郵箱: ${user.email}</p>
+                        <p>生日: ${user.birthday}</p>
+                        ${data.query ? `<p>查詢參數: ${data.query}</p>` : ''}
+                        <button onclick="prepareUpdate(${userId}, ${JSON.stringify(user).replace(/"/g, '&quot;')})">編輯此用戶</button>
+                    `;
+                    document.getElementById('userResult').innerHTML = resultHtml;
+                }
+            } catch (error) {
+                document.getElementById('userResult').innerHTML = `<p class="error">獲取用戶時發生錯誤: ${error.message}</p>`;
+            }
+        });
+
+        // 新增用戶
+        document.getElementById('createUser').addEventListener('click', async () => {
+        const userId = document.getElementById('newUserId').value;
+        const userName = document.getElementById('newUserName').value;
+        const userAge = document.getElementById('newUserAge').value;
+        const userEmail = document.getElementById('newUserEmail').value;
+        const userBirthday = document.getElementById('newUserBirthday').value;
+
+        if (!userId || !userName || !userAge || !userEmail || !userBirthday) {
+            document.getElementById('createResult').innerHTML = '<p class="error">請填寫所有必填字段</p>';
+            return;
+        }
+
+        const userData = {
+            name: userName,
+            age: parseInt(userAge),
+            email: userEmail,
+            birthday: userBirthday
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/user?new_user_id=${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP錯誤！狀態: ${response.status}`);
+            }
+
+            const data = await response.json();
+            document.getElementById('createResult').innerHTML = `<p class="success">用戶創建成功!</p>`;
+            displayAllUsers();
+        } catch (error) {
+            document.getElementById('createResult').innerHTML = `<p class="error">創建用戶時發生錯誤: ${error.message}</p>`;
+        }
+
+    });
+
+        // 更新用戶
+        document.getElementById('updateUser').addEventListener('click', async () => {
+            const userId = document.getElementById('updateUserId').value;
+            const userName = document.getElementById('updateUserName').value;
+            const userAge = document.getElementById('updateUserAge').value;
+            const userEmail = document.getElementById('updateUserEmail').value;
+            const userBirthday = document.getElementById('updateUserBirthday').value;
+            
+            if (!userId || !userName || !userAge || !userEmail || !userBirthday) {
+                document.getElementById('updateResult').innerHTML = '<p class="error">請填寫所有必填字段</p>';
+                return;
+            }
+            
+            const userData = {
+                name: userName,
+                age: parseInt(userAge),
+                email: userEmail,
+                birthday: userBirthday
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/user/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP錯誤！狀態: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                document.getElementById('updateResult').innerHTML = `<p class="success">用戶更新成功!</p>`;
+                
+                // 隱藏更新區域
+                setTimeout(() => {
+                    document.getElementById('updateUserSection').style.display = 'none';
+                    document.getElementById('updateResult').innerHTML = '';
+                }, 2000);
+                
+                // 刷新用戶列表
+                displayAllUsers();
+                
+            } catch (error) {
+                console.error("更新錯誤:", error);
+                document.getElementById('updateResult').innerHTML = `<p class="error">更新用戶時發生錯誤: ${error.message}</p>`;
+            }
+        });
+
+        // 取消更新
+        document.getElementById('cancelUpdate').addEventListener('click', () => {
+            document.getElementById('updateUserSection').style.display = 'none';
+            document.getElementById('updateResult').innerHTML = '';
+        });
+
+        // 刪除用戶
+        document.getElementById('deleteUser').addEventListener('click', async () => {
+            const userId = document.getElementById('deleteUserId').value;
+            
+            if (!userId) {
+                document.getElementById('deleteResult').innerHTML = '<p class="error">請輸入用戶ID</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/user/${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP錯誤！狀態: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                document.getElementById('deleteResult').innerHTML = `<p class="success">用戶 ${data.name || ''} 已成功刪除</p>`;
+                document.getElementById('deleteUserId').value = '';
+                
+                // 刷新用戶列表
+                displayAllUsers();
+            } catch (error) {
+                console.error("刪除錯誤:", error);
+                document.getElementById('deleteResult').innerHTML = `<p class="error">刪除用戶時發生錯誤: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
