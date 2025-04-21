@@ -82,13 +82,17 @@ def update_user(user_id:int, user:User):
         return "查無此使用者，請再次確認欲修改的使用者"
 
 # 刪除一位使用者
+from fastapi import HTTPException
+
 @app.delete("/user/{user_id}")
-def delete_user(user_id:int):    
-    if (user_id in fake_db_Keys):
+def delete_user(user_id: int):    
+    if user_id in fake_db["users"]:
         user = fake_db["users"].pop(user_id)
-        return user
+        return {"user": user}
     else:
-        return "查無此使用者，請再次確認欲刪除的使用者"
+        raise HTTPException(status_code=404, detail="查無此使用者，請再次確認欲刪除的使用者")
+
+
 
 
 # ====================================================================
