@@ -413,36 +413,38 @@
             document.getElementById('updateResult').innerHTML = '';
         });
 
-        // 刪除用戶
+        // 刪除
         document.getElementById('deleteUser').addEventListener('click', async () => {
             const userId = document.getElementById('deleteUserId').value;
-            
+        
             if (!userId) {
                 document.getElementById('deleteResult').innerHTML = '<p class="error">請輸入用戶ID</p>';
                 return;
             }
-            
+
             try {
-                const response = await fetch(`${API_URL}/user/${userId}`, {
+                const deleteResponse = await fetch(`${API_URL}/user/${userId}`, {
                     method: 'DELETE'
                 });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP錯誤！狀態: ${response.status}`);
+            
+                if (!deleteResponse.ok) {
+                    const errorData = await deleteResponse.json();
+                    throw new Error(errorData.detail || `刪除失敗：HTTP ${deleteResponse.status}`);
                 }
-                
-                const data = await response.json();
-                
-                document.getElementById('deleteResult').innerHTML = `<p class="success">用戶 ${data.name || ''} 已成功刪除</p>`;
-                document.getElementById('deleteUserId').value = '';
-                
-                // 刷新用戶列表
+            
+                const deleteData = await deleteResponse.json();
+                const deletedName = deleteData.user?.name || '（未知名稱）';
+                document.getElementById('deleteResult').innerHTML = `<p class="success">用戶 ${deletedName} 已成功刪除</p>`;
                 displayAllUsers();
+            
             } catch (error) {
-                console.error("刪除錯誤:", error);
-                document.getElementById('deleteResult').innerHTML = `<p class="error">刪除用戶時發生錯誤: ${error.message}</p>`;
+                document.getElementById('deleteResult').innerHTML = `<p class="error">刪除失敗: ${error.message}</p>`;
             }
+            
+        
+
         });
+        
     </script>
 </body>
 </html>
