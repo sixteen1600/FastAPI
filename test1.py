@@ -1,4 +1,4 @@
-# pip install fastapi nest-asyncio pyngrok uvicorn pydantic
+# pip install fastapi nest-asyncio pyngrok uvicorn pydantic pydantic[email]
 # uvicorn test1:app --host 127.0.0.1 --port 8000 --reload
 
 # Step 2: Importing Necessary Libraries and Classes
