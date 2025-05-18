@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title>登入你的帳號</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Google 字體 -->
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #fafbfc;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #fff;
+            padding: 40px 32px 32px 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(34, 34, 68, .04), 0 1.5px 8px rgba(34, 34, 68, .02);
+            max-width: 340px;
+            width: 100%;
+        }
+
+        .title {
+            font-weight: 600;
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+            color: #22223b;
+        }
+
+        .subtitle {
+            color: #70778b;
+            font-size: 1.05rem;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            width: 100%;
+            border: 1px solid #e3e3e3;
+            background: #fff;
+            color: #22223b;
+            font-size: 1rem;
+            border-radius: 6px;
+            padding: 11px 0;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background .2s, box-shadow .2s;
+        }
+
+        .btn:hover {
+            background: #f5f5fa;
+            box-shadow: 0 1px 4px rgba(50, 50, 93, .07);
+        }
+
+        .btn img {
+            height: 20px;
+            width: 20px;
+        }
+
+        .input-group {
+            margin: 18px 0 0 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 0.98rem;
+            color: #70778b;
+            margin-bottom: 6px;
+        }
+
+        .input-group input {
+            padding: 10px 12px;
+            border: 1px solid #e3e3e3;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            margin-bottom: 3px;
+            background: #f9f9fc;
+            transition: border .2s;
+        }
+
+        .input-group input:focus {
+            border: 1.2px solid #8bbafe;
+            background: #fff;
+        }
+
+        .continue-btn {
+            width: 100%;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 0;
+            font-size: 1.06rem;
+            margin: 20px 0 8px 0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s;
+        }
+
+        .continue-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .footer {
+            color: #b0b0b0;
+            font-size: 0.92rem;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .footer a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .helper-text {
+            color: #a0a0a0;
+            font-size: 0.97rem;
+            margin: 4px 0 0 0;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 28px 10px;
+                border-radius: 0;
+                max-width: 98vw;
+            }
+        }
+    </style>
+    <!-- 載入 Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        // 將下方資訊換成你的 firebaseConfig
+        const firebaseConfig = {
+            apiKey: "",
+            authDomain: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        window.signInWithGoogle = async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                const idToken = await user.getIdToken();
+                // 發送到後端驗證
+                const response = await fetch("http://localhost:8000/protected", {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${idToken}`
+                    }
+                });
+                const data = await response.json();
+                alert("登入成功！\n" + JSON.stringify(data, null, 2));
+            } catch (error) {
+                alert("Google 登入失敗：" + error.message);
+            }
+        };
+    </script>
+</head>
+
+<body>
+    <div class="container">
+
+        <button class="btn" onclick="signInWithGoogle()">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
+            Continue with Google
+        </button>
+
+        <!-- <div class="input-group">
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="Enter your email address..." disabled>
+            <div class="helper-text">Use an organization email to easily collaborate with teammates</div>
+        </div>
+
+        <button class="continue-btn" disabled>Continue</button>
+
+        <div class="footer">
+            By continuing, you acknowledge that you understand<br>
+            and agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a>
+        </div> -->
+    </div>
+</body>
+
+</html>
