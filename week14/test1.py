@@ -1,5 +1,5 @@
 # pip install fastapi nest-asyncio pyngrok uvicorn pydantic pydantic[email] bcrypt firebase-admin python-dotenv
-# uvicorn test1:app --host 127.0.0.1 --port 8000 --reload
+# uvicorn week14:app --host 127.0.0.1 --port 8000 --reload
 
 
 # Step 2: Importing Necessary Libraries and Classes
@@ -250,37 +250,6 @@ async def login_user(user: UserLogin, db: Session = Depends(get_db)):
     return {"message":f"{db_user.name}您好，登入成功，歡迎回來"}
     
 # ====================================================================================================================================================
-import firebase_admin
-from firebase_admin import credentials
-from fastapi import FastAPI
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-
-cred = credentials.Certificate(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
-firebase_admin.initialize_app(cred)
-
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from firebase_admin import auth
-
-security = HTTPBearer()
-
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    try:
-        decoded_token = auth.verify_id_token(credentials.credentials)
-        return decoded_token
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="無效的認證憑證",
-            headers={"WWW-Authenticate":"Bearer"},
-        )
-
-
-# ====================================================================================================================================================
-
 from fastapi import Depends
 from auth import get_current_user
 
@@ -294,7 +263,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 @app.get("/protected")
 def protected_route(user=Depends(get_current_user)):
