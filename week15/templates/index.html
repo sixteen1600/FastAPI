@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>登入選擇</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeS4QmyFlY1kGk4wjJeEKA1OqZ9hsRw2k",
+            authDomain: "project-4744833769401526445.firebaseapp.com",
+            projectId: "project-4744833769401526445",
+            storageBucket: "project-4744833769401526445.firebasestorage.app",
+            messagingSenderId: "942642616229",
+            appId: "1:942642616229:web:1cd1a43ac9f56691d2ba4c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" });
+
+        async function handleLogin(expectRole) {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                const idToken = await user.getIdToken();
+
+                // 暫存 token
+                localStorage.setItem("idToken", idToken);
+
+                // 註冊或登入後端資料
+                await fetch("http://localhost:8000/google_login_or_register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({
+                        name: user.displayName,
+                        email: user.email,
+                        uid: user.uid
+                    })
+                });
+
+                // 確認實際身份
+                const res = await fetch("http://localhost:8000/whoami", {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${idToken}`
+                    }
+                });
+                const data = await res.json();
+
+                if (data.role === expectRole) {
+                    window.location.href = expectRole === "admin" ? "/admin" : "/user";
+                } else {
+                    alert(`您不是 ${expectRole}，無法進入該系統`);
+                }
+
+            } catch (error) {
+                alert("登入失敗：" + error.message);
+            }
+        }
+
+        window.adminLogin = () => handleLogin("admin");
+        window.userLogin = () => handleLogin("user");
+    </script>
+</head>
+<body>
+    <h1>請選擇登入身份</h1>
+    <button onclick="adminLogin()">管理者登入</button>
+    <button onclick="userLogin()">使用者登入</button>
+</body>
+</html>
