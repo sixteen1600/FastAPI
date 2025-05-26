@@ -3,12 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>登入選擇</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/index.css">
+
+    <!-- Google Fonts (美觀用) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&display=swap" rel="stylesheet">
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
         const firebaseConfig = {
-            // 換成你的
+            apiKey: "AIzaSyBeS4QmyFlY1kGk4wjJeEKA1OqZ9hsRw2k",
+            authDomain: "project-4744833769401526445.firebaseapp.com",
+            projectId: "project-4744833769401526445",
+            storageBucket: "project-4744833769401526445.firebasestorage.app",
+            messagingSenderId: "942642616229",
+            appId: "1:942642616229:web:1cd1a43ac9f56691d2ba4c"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -22,10 +34,8 @@
                 const user = result.user;
                 const idToken = await user.getIdToken();
 
-                // 暫存 token
                 localStorage.setItem("idToken", idToken);
 
-                // 註冊或登入後端資料
                 await fetch("http://localhost:8000/google_login_or_register", {
                     method: "POST",
                     headers: {
@@ -39,7 +49,6 @@
                     })
                 });
 
-                // 確認實際身份
                 const res = await fetch("http://localhost:8000/whoami", {
                     method: "GET",
                     headers: {
@@ -64,8 +73,20 @@
     </script>
 </head>
 <body>
-    <h1>請選擇登入身份</h1>
-    <button onclick="adminLogin()">管理者登入</button>
-    <button onclick="userLogin()">使用者登入</button>
+    <div class="login-container">
+        <div class="login-icon">🔒</div>
+        <div class="login-title">請選擇登入身份</div>
+        <div class="role-btns">
+            <button class="admin" onclick="adminLogin()">
+                <span style="font-size:1.3em;">🛡️</span>
+                管理者登入
+            </button>
+            <button class="user" onclick="userLogin()">
+                <span style="font-size:1.3em;">👤</span>
+                使用者登入
+            </button>
+        </div>
+        <div class="tip">支援 Google 帳號快速登入</div>
+    </div>
 </body>
 </html>
