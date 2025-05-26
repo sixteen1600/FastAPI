@@ -1,0 +1,72 @@
+.login-container {
+    background: rgba(255,255,255,0.95);
+    border-radius: 2rem;
+    box-shadow: 0 8px 32px #b4bbfa33;
+    padding: 38px 44px 30px 44px;
+    max-width: 420px;
+    width: 95vw;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.login-title {
+    font-size: 2.1rem;
+    margin-bottom: 20px;
+    color: #384cff;
+    text-shadow: 0 1px 4px #a5b4fc33;
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+.login-icon {
+    font-size: 3.2rem;
+    margin-bottom: 10px;
+    color: #5a67d8;
+    filter: drop-shadow(0 4px 16px #6b7fd966);
+}
+.role-btns {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 18px;
+    margin-top: 16px;
+}
+.role-btns button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 1.12rem;
+    padding: 14px 0;
+    width: 100%;
+    border-radius: 1.6rem;
+    box-shadow: 0 2px 8px #667eea33;
+}
+.role-btns button.admin {
+    background: linear-gradient(90deg, #6366f1 0%, #384cff 100%);
+}
+.role-btns button.user {
+    background: linear-gradient(90deg, #38b2ac 0%, #6ee7b7 100%);
+}
+.role-btns button.admin:hover {
+    background: linear-gradient(90deg, #384cff 0%, #6366f1 100%);
+}
+.role-btns button.user:hover {
+    background: linear-gradient(90deg, #6ee7b7 0%, #38b2ac 100%);
+}
+.tip {
+    color: #848aff;
+    font-size: 1rem;
+    margin: 22px 0 6px 0;
+    text-align: center;
+}
+@media (max-width: 500px) {
+    .login-container { padding: 18px 8px 18px 8px; }
+    .login-title { font-size: 1.3rem; }
+}
+@media (prefers-color-scheme: dark) {
+    .login-container {
+        background: rgba(30,35,60,0.93);
+        box-shadow: 0 4px 16px #0004;
+    }
+}
