@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>管理者後台</title>
+</head>
+<body>
+    <h1>管理者介面</h1>
+    <p>歡迎管理者！</p>
+    <div id="user-list">
+        <h3>使用者清單：</h3>
+        <ul id="users"></ul>
+    </div>
+
+    <script type="module">
+        // 改為引入共用模組
+        import { auth } from "/static/js/firebaseConfig.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        async function checkAdminAndLoadUsers(user) {
+            try {
+                const idToken = await user.getIdToken();
+
+                // 驗證是否為 admin
+                const whoamiRes = await fetch("http://localhost:8000/whoami", {
+                    headers: {
+                        Authorization: `Bearer ${idToken}`
+                    }
+                });
+
+                if (!whoamiRes.ok) {
+                    throw new Error("無法確認身份");
+                }
+
+                const whoamiData = await whoamiRes.json();
+                if (whoamiData.role !== "admin") {
+                    alert("您不是管理者，無法進入該頁面");
+                    window.location.href = "/";
+                    return;
+                }
+
+                // 載入所有使用者
+                const response = await fetch("http://localhost:8000/allUsers", {
+                    headers: {
+                        Authorization: `Bearer ${idToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert("權限錯誤：" + err.detail);
+                    return;
+                }
+
+                const users = await response.json();
+                const list = document.getElementById("users");
+                users.forEach(u => {
+                    const item = document.createElement("li");
+                    item.textContent = `${u.id} - ${u.name} (${u.email})`;
+                    list.appendChild(item);
+                });
+
+            } catch (err) {
+                console.error("🚨 錯誤發生：", err);
+                alert("載入失敗，請稍後再試");
+                window.location.href = "/";
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                checkAdminAndLoadUsers(user);
+            } else {
+                alert("請先登入");
+                window.location.href = "/";
+            }
+        });
+    </script>
+</body>
+</html>
