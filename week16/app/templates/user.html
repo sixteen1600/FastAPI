@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>使用者頁面</title>
+</head>
+<body>
+    <h1>使用者介面</h1>
+    <p>您好，歡迎使用本系統。</p>
+    <div id="user-info"></div>
+    <script type="module">
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        const auth = getAuth();
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const idToken = await user.getIdToken();
+                const response = await fetch("http://localhost:8000/protected", {
+                    headers: {
+                        Authorization: `Bearer ${idToken}`
+                    }
+                });
+                const data = await response.json();
+                document.getElementById("user-info").innerText = JSON.stringify(data, null, 2);
+            } else {
+                alert("請重新登入");
+                window.location.href = "/";
+            }
+        });
+    </script>
+</body>
+</html>
